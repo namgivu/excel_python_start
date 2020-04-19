@@ -1,3 +1,5 @@
 .idea/
 .venv/
-/tmp/out/*
+
+tests/tmp/*
+**.pytest_cache/
