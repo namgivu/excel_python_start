@@ -1,7 +1,6 @@
 import os
 from openpyxl import load_workbook, Workbook
 
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__)) + '/..'
 PWD = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -61,17 +60,17 @@ class Test:
 
     def test_openpyxl_read(self):
         # create fixture
-        expenses = (['Rent', 1000], ['Gym', 50])
+        EXP = (['abb', 122], ['xxx', 333])
         excel_file_name = f'{PWD}/fixture/input.xlsx'
         excelread = ExcelRead()
 
         # check excel file is exist and it's data
         assert os.path.isfile(excel_file_name)
-        assert excelread.openpyxl_read_excel(excel_file_name) == expenses
+        assert excelread.openpyxl_read_excel(excel_file_name) == EXP
 
     def test_openpyxl_write_new_file(self):
         # create fixture
-        expenses = (['Rent', 1000], ['Gym', 50])
+        expenses = (['abb', 122], ['xxx', 333])
         excel_file_name, worksheet_name = f'{PWD}/tmp/output.xlsx', 'Sheet test'
         excelread, excelwrite= ExcelRead(), ExcelWrite()
         excelwrite.openpyxl_write_new_excel_file(excel_file_name,  expenses)
