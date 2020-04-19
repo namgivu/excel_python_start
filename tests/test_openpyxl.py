@@ -1,17 +1,26 @@
 import os
+from shutil import copyfile
+
 from openpyxl import load_workbook, Workbook
 
 PWD = os.path.abspath(os.path.dirname(__file__))
 
+INPUT_FILE  = f'{PWD}/fixture/input.xlsx'
+OUTPUT_FILE = f'{PWD}/tmp/output.xlsx'
 
 #region read+write xlsx util
 """
-wb aka workbook
-ws aka worksheet
+EXP aka  EXPECTED
+ACT aka  ACTUAL
+
+wb  aka  workbook
+ws  aka  worksheet
 """
 
-class ExcelRead:
 
+class ER:  # ER aka ExcelRead
+
+    @classmethod
     def openpyxl_read_excel(self, path_file):
         wb = load_workbook(path_file)
         ws = wb.active
@@ -29,9 +38,10 @@ class ExcelRead:
         return data_return
 
 
-class ExcelWrite:
+class EW:  # EW aka ExcelWrite
 
-    def openpyxl_write_new_excel_file(self, file_name, data_to_write=()):
+    @staticmethod
+    def openpyxl_write_excel_file(file_name, data_to_write=()):
         wb = Workbook()
         ws = wb.active
 
@@ -41,8 +51,10 @@ class ExcelWrite:
 
         # save file
         wb.save(file_name)
-    
-    def openpyxl_write_existing_excel_file(self, file_name, data_to_write=()):
+
+
+    @staticmethod
+    def openpyxl_update_excel_file(file_name, data_to_write=()):
         wb = load_workbook(file_name)
         ws = wb.active
         max_row = ws.max_row
@@ -59,35 +71,34 @@ class ExcelWrite:
 class Test:
 
     def test_openpyxl_read(self):
-        # create fixture
         EXP = (['abb', 122], ['xxx', 333])
-        excel_file_name = f'{PWD}/fixture/input.xlsx'
-        excelread = ExcelRead()
 
-        # check excel file is exist and it's data
-        assert os.path.isfile(excel_file_name)
-        assert excelread.openpyxl_read_excel(excel_file_name) == EXP
+        # testee code
+        ACT = ER.openpyxl_read_excel(INPUT_FILE)
+
+        assert ACT == EXP
+
 
     def test_openpyxl_write_new_file(self):
-        # create fixture
-        expenses = (['abb', 122], ['xxx', 333])
-        excel_file_name, worksheet_name = f'{PWD}/tmp/output.xlsx', 'Sheet test'
-        excelread, excelwrite= ExcelRead(), ExcelWrite()
-        excelwrite.openpyxl_write_new_excel_file(excel_file_name,  expenses)
+        EXP = (['abb', 122], ['xxx', 333])
 
-        # check excel file is exist and it's data
-        assert os.path.isfile(excel_file_name)
-        assert excelread.openpyxl_read_excel(excel_file_name) == expenses
+        # testee code
+        EW.openpyxl_write_excel_file(OUTPUT_FILE, EXP)
+
+        # check by reread
+        reread = ER.openpyxl_read_excel(OUTPUT_FILE)
+        assert reread == EXP
+
 
     def test_openpyxl_update_current_file(self):
         # create fixture
-        excel_file_name, worksheet_name = f'{PWD}/tmp/output.xlsx', 'Sheet test'
-        excelread, excelwrite= ExcelRead(), ExcelWrite()
-        old_expenese = excelread.openpyxl_read_excel(excel_file_name)
-        new_expenses = (['Telephone', 300], ['Party', 200])
-        excelwrite.openpyxl_write_existing_excel_file(excel_file_name,  new_expenses) ## write new_expenses
-        expenses = old_expenese + new_expenses
+        current_rows = ER.openpyxl_read_excel(INPUT_FILE)
+        new_rows     = (['new1', 11], ['new2', 22])
+        EXP = current_rows + new_rows
 
-        # check excel file is exist and it's data
-        assert os.path.isfile(excel_file_name)
-        assert excelread.openpyxl_read_excel(excel_file_name) == expenses
+        # testee code - create new file from :INPUT and insert :new_rows to :OUTPUT
+        copyfile(INPUT_FILE, OUTPUT_FILE)
+        EW.openpyxl_update_excel_file(OUTPUT_FILE, new_rows)
+
+        ACT = ER.openpyxl_read_excel(OUTPUT_FILE)
+        assert ACT == EXP
